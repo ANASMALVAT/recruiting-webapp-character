@@ -4,7 +4,7 @@ import { attributeSlice } from "./slice/attributeSlice";
 const store = configureStore({
     reducer:{
         classSlice:classSlice,
-        attribute: attributeSlice,
+        attributeSlice: attributeSlice,
 
     },
   });

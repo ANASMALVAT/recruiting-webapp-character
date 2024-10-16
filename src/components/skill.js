@@ -1,42 +1,23 @@
-import React, { useEffect , useState} from 'react';
-import { SKILL_LIST } from "../consts";
+import React, { useEffect, useState } from 'react';
 
-const Skill = () => {
-  const getInitialModifiers = () => {
-    const storedModifiers = localStorage.getItem('skillModifiers');
-    if (storedModifiers) {
-      return JSON.parse(storedModifiers);
-    }
-    return SKILL_LIST.map((skill) => ({
-      name: skill.name,
-      modifier: 0,
-      attributeModifier: skill.attributeModifier,
-    }));
-
-
-  };
-
-  const [skills, setSkills] = useState(getInitialModifiers);
+const Skill = ({ skills, setSkills, attributes }) => {
 
   useEffect(() => {
-    localStorage.setItem('skillModifiers', JSON.stringify(skills));
+    localStorage.setItem('skillModifiers', JSON.stringify(skills));    
   }, [skills]);
 
-  useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (event.key === 'skillModifiers') {
-        const newModifiers = JSON.parse(event.newValue);
-        setSkills(skills => newModifiers || getInitialModifiers());
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+  const getTotalModifiers = () => {
+    return skills.reduce((total, skill) => total + skill.modifier, 0);
+  };
 
   const handleIncrement = (index) => {
+    const totalModifiers = getTotalModifiers();
+
+    if (totalModifiers >= 18) {
+      alert('Total value of skill modifiers cannot exceed 18');
+      return;
+    }
+
     const updatedSkills = [...skills];
     updatedSkills[index].modifier += 1;
     setSkills(updatedSkills);
@@ -58,8 +39,8 @@ const Skill = () => {
           key={skill.name}
           className="flex items-center justify-between p-4 border border-gray-300 rounded-lg"
         >
-          <span className="w-48 font-medium">{skill.name}</span>
-          <span className="w-32">{skill.modifier}</span>
+          <span className="w-24 font-medium">{skill.name}</span>
+          <span className="w-20">{skill.modifier}</span>
           <div className="flex items-center space-x-4">
             <button
               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -75,6 +56,27 @@ const Skill = () => {
               +
             </button>
           </div>
+          
+          <h2 className="text-sm font-bold mr-2 ml-2">
+            Modifier: {
+             attributes.map((attr) => {
+              if (attr.name === skill.attributeModifier) {
+                const modifier = Math.max(-5, Math.floor((attr.value - 10) / 2));
+                return <span key={attr.name}>{modifier}</span>;
+              }
+              return null;
+            })
+            }
+          </h2>
+          <h2 className="m-2 text-sm font-bold">Total Value</h2>
+            {
+              attributes.map((attr) => {
+                if (attr.name === skill.attributeModifier) {
+                  const modifier = Math.max(-5, Math.floor((attr.value - 10) / 2));
+                  return <span key={attr.name}>{modifier + skill.modifier}</span>;
+                }
+              })
+            }
         </div>
       ))}
     </div>
