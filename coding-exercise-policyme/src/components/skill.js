@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect , useState} from 'react';
 import { SKILL_LIST } from "../consts";
 
 const Skill = () => {
@@ -7,14 +7,34 @@ const Skill = () => {
     if (storedModifiers) {
       return JSON.parse(storedModifiers);
     }
-    return SKILL_LIST.map((skill) => ({ name: skill.name, modifier: 0, attributeModifier: skill.attributeModifier }));
+    return SKILL_LIST.map((skill) => ({
+      name: skill.name,
+      modifier: 0,
+      attributeModifier: skill.attributeModifier,
+    }));
+
+
   };
 
-  const [skills, setSkills] = React.useState(getInitialModifiers);
+  const [skills, setSkills] = useState(getInitialModifiers);
 
   useEffect(() => {
     localStorage.setItem('skillModifiers', JSON.stringify(skills));
   }, [skills]);
+
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === 'skillModifiers') {
+        const newModifiers = JSON.parse(event.newValue);
+        setSkills(skills => newModifiers || getInitialModifiers());
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleIncrement = (index) => {
     const updatedSkills = [...skills];
@@ -24,7 +44,7 @@ const Skill = () => {
 
   const handleDecrement = (index) => {
     const updatedSkills = [...skills];
-    if (updatedSkills[index].modifier > -5) { // Assuming minimum modifier is -5
+    if (updatedSkills[index].modifier > -5) {
       updatedSkills[index].modifier -= 1;
       setSkills(updatedSkills);
     }
@@ -39,12 +59,12 @@ const Skill = () => {
           className="flex items-center justify-between p-4 border border-gray-300 rounded-lg"
         >
           <span className="w-48 font-medium">{skill.name}</span>
-          <span className="w-32 ">{skill.modifier}</span>
+          <span className="w-32">{skill.modifier}</span>
           <div className="flex items-center space-x-4">
             <button
               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
               onClick={() => handleDecrement(index)}
-              disabled={skill.modifier <= -5} 
+              disabled={skill.modifier <= -5}
             >
               -
             </button>
